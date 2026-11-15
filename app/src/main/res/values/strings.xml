@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PixelShelf</string>
+    <string name="settings_title">设置</string>
+    <string name="tab_all">全部</string>
+    <string name="tab_gba">GBA</string>
+    <string name="tab_nds">NDS</string>
+    <string name="tab_psp">PSP</string>
+    <string name="empty_hint">没有找到游戏。点右上角「设置」添加游戏文件夹。</string>
+    <string name="no_emu_hint">未检测到该平台的模拟器，点击游戏时会提示安装。</string>
+    <string name="refresh">刷新</string>
+    <string name="settings">设置</string>
+    <string name="rescan">重新扫描</string>
+    <string name="folders">游戏文件夹</string>
+    <string name="add_folder">添加文件夹</string>
+    <string name="remove">移除</string>
+    <string name="emulators">模拟器</string>
+    <string name="emulator_for">%s 模拟器</string>
+    <string name="auto_detect">自动检测</string>
+    <string name="set_as_home">设为默认桌面</string>
+    <string name="set_as_home_desc">启用后，按 Home 键或开机都会回到 PixelShelf。可在系统设置里改回。</string>
+    <string name="boot_start">开机自启动</string>
+    <string name="boot_start_desc">开机后自动打开 PixelShelf（不使用默认桌面时也有用）。</string>
+    <string name="games_found">共 %1$d 个游戏</string>
+    <string name="scanning">正在扫描…</string>
+    <string name="search_hint">搜索游戏</string>
+    <string name="play">开始游戏</string>
+    <string name="open_settings">设置</string>
+    <string name="emu_missing">未找到 %1$s 模拟器，请先安装</string>
+    <string name="pick_folder">选择文件夹</string>
+    <string name="permission_needed">需要文件访问权限才能扫描游戏</string>
+    <string name="grant">授予权限</string>
+    <string name="no_folder_selected">尚未添加文件夹</string>
+    <string name="reset_all">恢复默认设置</string>
+    <string name="opened_emulator_only">该模拟器不支持直接打开文件，已为你启动模拟器</string>
+    <string name="file_access">需要「所有文件访问」权限才能扫描到游戏文件夹</string>
+    <string name="open_file_access">去授权</string>
+    <string name="scan_done">扫描完成</string>
+    <string name="sort_name">按名称</string>
+    <string name="sort_recent">按时间</string>
+    <string name="home_tip">设为默认桌面后，按 Home 键就回到这里</string>
+    <string name="home_set">已设为默认桌面</string>
+    <string name="cant_set_home">请在系统「默认应用」里选择「PixelShelf」作为桌面</string>
+    <string name="no_match_hint">没有符合条件的游戏，换个筛选或搜索词试试。</string>
+</resources>
+

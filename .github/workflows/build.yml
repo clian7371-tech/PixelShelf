@@ -1,0 +1,155 @@
+name: Build APK
+
+on:
+  push:
+    branches: [ main, master ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    # 用 windows runner 复用已验证的 build.ps1
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Android SDK
+        shell: pwsh
+        run: |
+          # windows-latest 镜像已预装 Android SDK，直接用，避免第三方 action 的不确定性
+          if (-not $env:ANDROID_HOME) {
+            $candidates = @(
+              "$env:LOCALAPPDATA\Android\Sdk",
+              "C:\Android\android-sdk",
+              "C:\Android\Sdk",
+              "$env:ProgramFiles\Android\android-sdk"
+            )
+            foreach ($c in $candidates) {
+              if (Test-Path (Join-Path $c 'platform-tools')) {
+                $env:ANDROID_HOME = $c
+                break
+              }
+            }
+          }
+          if (-not $env:ANDROID_HOME) { throw "找不到预装的 Android SDK" }
+          "ANDROID_HOME=$env:ANDROID_HOME"   >> $env:GITHUB_ENV
+          "ANDROID_SDK_ROOT=$env:ANDROID_HOME" >> $env:GITHUB_ENV
+          Write-Host "SDK: $env:ANDROID_HOME"
+          Get-ChildItem $env:ANDROID_HOME | Select-Object -ExpandProperty Name
+
+      - name: Install build-tools and platform
+        shell: pwsh
+        run: |
+          $sdk = $env:ANDROID_HOME
+          $bt   = Join-Path $sdk 'build-tools\35.0.0'
+          $plat = Join-Path $sdk 'platforms\android-35'
+
+          if ((Test-Path $bt) -and (Test-Path $plat)) {
+            Write-Host "build-tools 35 与 platform 35 已预装，跳过安装"
+            exit 0
+          }
+
+          $sdkmanager = Get-ChildItem -Path $sdk -Recurse -Filter 'sdkmanager.bat' -ErrorAction SilentlyContinue |
+                        Select-Object -First 1
+          if (-not $sdkmanager) { throw "SDK 中找不到 sdkmanager.bat" }
+
+          cmd /c "echo y | `"$($sdkmanager.FullName)`" --licenses"
+          & $sdkmanager.FullName "platforms;android-35" "build-tools;35.0.0"
+          if ($LASTEXITCODE -ne 0) { throw "sdkmanager 安装失败" }
+
+          Write-Host "build-tools: $(Test-Path $bt) ; platform: $(Test-Path $plat)"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Generate cover index
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          # 索引不随仓库分发（第三方数据），构建时重新生成。
+          # 失败不阻断构建 —— 应用会在没有索引时退化为本地封面。
+          python build_index.py
+          if ($LASTEXITCODE -ne 0) {
+            Write-Warning "索引生成不完整，将构建不含网络封面的版本"
+            exit 0
+          }
+
+      - name: Restore signing key (optional)
+        shell: pwsh
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:KEYSTORE_BASE64)) {
+            Write-Host "未配置 KEYSTORE_BASE64，将使用一次性签名密钥"
+            exit 0
+          }
+          [IO.File]::WriteAllBytes(
+            "$PWD\release.keystore",
+            [Convert]::FromBase64String($env:KEYSTORE_BASE64))
+          "PIXELSHELF_KEYSTORE=$PWD\release.keystore" >> $env:GITHUB_ENV
+
+      - name: Require stable signing key for releases
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          # 发布版必须用固定签名，否则每次签名不同、用户无法覆盖升级。
+          if ([string]::IsNullOrWhiteSpace($env:KEYSTORE_BASE64)) {
+            throw "发布构建缺少 KEYSTORE_BASE64 secret。请先配置签名密钥，避免发出签名不一致的安装包。"
+          }
+
+      - name: Build
+        shell: pwsh
+        env:
+          PIXELSHELF_KS_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
+          PIXELSHELF_KS_PASS: ${{ secrets.KEYSTORE_PASS }}
+          PIXELSHELF_KEY_PASS: ${{ secrets.KEY_PASS }}
+        run: |
+          # 未配置 secrets 时，build.ps1 会自动生成一次性 keystore
+          ./build.ps1
+
+      - name: Verify signature
+        shell: pwsh
+        run: |
+          $apksigner = Join-Path $env:ANDROID_HOME "build-tools\35.0.0\apksigner.bat"
+          & $apksigner verify --verbose PixelShelf.apk
+          if ($LASTEXITCODE -ne 0) { throw "签名校验失败" }
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PixelShelf-apk
+          path: PixelShelf.apk
+          if-no-files-found: error
+
+      - name: Create release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: PixelShelf.apk
+          generate_release_notes: true
+          body: |
+            PixelShelf ${{ github.ref_name }}
+
+            **安装前请阅读**
+            - 本应用不含任何游戏 ROM、模拟器或 BIOS，请自行安装模拟器并自备合法 ROM。
+            - 首次启动需要授予「所有文件访问」权限，用于扫描 ROM 目录。
+            - 与任天堂、索尼等权利人无关联；平台名称仅用于说明兼容性。
+
+            详见 [NOTICE.md](https://github.com/${{ github.repository }}/blob/main/NOTICE.md)

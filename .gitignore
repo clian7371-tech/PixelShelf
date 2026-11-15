@@ -1,0 +1,33 @@
+# 构建产物
+build/
+*.apk
+*.apk.idsig
+*.aab
+*.dex
+
+# 签名文件 —— 绝对不要提交
+*.keystore
+*.jks
+*.p12
+*.pem
+
+# 由 build_index.py 生成，属第三方数据，不随仓库分发
+app/src/main/assets/index_*.txt
+
+# 本地测试残留
+src_push/
+cover_test/
+*.log
+ui.xml
+
+# 编辑器 / 系统
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.pyc
+u.xml

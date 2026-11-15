@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bg">#FF05070D</color>
+    <color name="bg2">#FF0A0F1A</color>
+    <color name="card">#FF111826</color>
+    <color name="fg">#FFEAF2FF</color>
+    <color name="fg2">#FF7C8CA8</color>
+    <color name="fg3">#FF586678</color>
+    <color name="accent">#FF22D3EE</color>
+    <color name="cyan">#FF22D3EE</color>
+    <color name="cyan_dim">#3322D3EE</color>
+    <color name="gba">#FFA78BFA</color>
+    <color name="nds">#FF34D399</color>
+    <color name="psp">#FFFB923C</color>
+</resources>

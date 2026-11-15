@@ -1,0 +1,25 @@
+# 统一换行符，避免 Windows 与 Linux 之间产生无意义的 diff
+* text=auto
+
+# 源码与文档用 LF
+*.java   text eol=lf
+*.xml    text eol=lf
+*.md     text eol=lf
+*.py     text eol=lf
+*.yml    text eol=lf
+*.yaml   text eol=lf
+*.gitignore text eol=lf
+LICENSE  text eol=lf
+
+# Windows 脚本保持 CRLF（Windows PowerShell 5.1 需要 BOM + CRLF 才最稳）
+*.ps1    text eol=crlf
+
+# 二进制文件不做任何转换
+*.png    binary
+*.jpg    binary
+*.jpeg   binary
+*.webp   binary
+*.keystore binary
+*.apk    binary
+*.idsig  binary
+*.dex    binary
