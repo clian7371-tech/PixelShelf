@@ -139,23 +139,26 @@ public final class CoverArt {
     public static int accentFor(String plat) {
         switch (plat) {
             case Emulators.PLATFORM_GBA:
-                return 0xFFA78BFA;
+                return 0xFFA78BFA;   // 紫
+            case Emulators.PLATFORM_GBC:
+                return 0xFFF472B6;   // 粉
             case Emulators.PLATFORM_NDS:
-                return 0xFF34D399;
+                return 0xFF34D399;   // 绿
+            case Emulators.PLATFORM_SNES:
+                return 0xFF60A5FA;   // 蓝
+            case Emulators.PLATFORM_NES:
+                return 0xFFF87171;   // 红
+            case Emulators.PLATFORM_MD:
+                return 0xFFFACC15;   // 黄
+            case Emulators.PLATFORM_PS1:
+                return 0xFF818CF8;   // 靛
             default:
-                return 0xFFFB923C;
+                return 0xFFFB923C;   // PSP 橙
         }
     }
 
     public static String label(String plat) {
-        switch (plat) {
-            case Emulators.PLATFORM_GBA:
-                return "GBA";
-            case Emulators.PLATFORM_NDS:
-                return "NDS";
-            default:
-                return "PSP";
-        }
+        return Emulators.labelOf(plat);
     }
 
     private CoverArt() {

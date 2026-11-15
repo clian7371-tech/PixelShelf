@@ -29,15 +29,28 @@ public class LogicTest {
 
         // --- 平台识别 ---
         eq("gba", Emulators.platformOf("pokemon.gba"), "gba");
-        eq("gbc", Emulators.platformOf("zelda.gbc"), "gba");
+        eq("gbc", Emulators.platformOf("zelda.gbc"), "gbc");
+        eq("gb", Emulators.platformOf("tetris.gb"), "gbc");
         eq("nds", Emulators.platformOf("mario.nds"), "nds");
         eq("ds", Emulators.platformOf("game.ds"), "nds");
         eq("iso", Emulators.platformOf("crisis.iso"), "psp");
         eq("cso", Emulators.platformOf("crisis.cso"), "psp");
         eq("pbp", Emulators.platformOf("ff7.pbp"), "psp");
+        eq("snes sfc", Emulators.platformOf("mario.sfc"), "snes");
+        eq("snes smc", Emulators.platformOf("zelda.smc"), "snes");
+        eq("nes", Emulators.platformOf("contra.nes"), "nes");
+        eq("md", Emulators.platformOf("sonic.md"), "md");
+        eq("ps1 cue", Emulators.platformOf("ff7.cue"), "ps1");
+        eq("ps1 m3u", Emulators.platformOf("metal.m3u"), "ps1");
         eq("unknown txt", Emulators.platformOf("readme.txt"), null);
         eq("unknown mp4", Emulators.platformOf("movie.mp4"), null);
         eq("large", Emulators.platformOf("GAME.GBA"), "gba");
+
+        // --- 压缩包按名字识别平台 ---
+        eq("zip gba", Emulators.platformOf("/roms/Pokemon GBA.zip"), "gba");
+        eq("zip nds", Emulators.platformOf("/roms/Mario NDS.zip"), "nds");
+        eq("zip snes", Emulators.platformOf("/roms/Zelda SNES.zip"), "snes");
+        eq("zip unknown", Emulators.platformOf("/roms/backup.zip"), null);
 
         // --- 大小文本 ---
         eq("kb", new Game("/x/a.gba", "a", "gba", 512 * 1024, 0).sizeText(), "512 KB");

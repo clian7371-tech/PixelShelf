@@ -27,35 +27,48 @@ UA = 'PixelShelf-build-script/1.0'
 
 SYS = {
     'gba': 'Nintendo - Game Boy Advance',
+    'gbc': 'Nintendo - Game Boy Color',
     'nds': 'Nintendo - Nintendo DS',
     'psp': 'Sony - PlayStation Portable',
-    'gbc': 'Nintendo - Game Boy Color',
+    'snes': 'Nintendo - Super Nintendo Entertainment System',
+    'nes': 'Nintendo - Nintendo Entertainment System',
+    'md': 'Sega - Mega Drive - Genesis',
+    'ps1': 'Sony - PlayStation',
 }
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(ROOT, 'app', 'src', 'main', 'assets')
 
 
-def fetch_names(sysname):
+def fetch_names(sysname, attempts=4):
     url = BASE + urllib.parse.quote(sysname + '/Named_Boxarts/')
-    t0 = time.time()
-    req = urllib.request.Request(url, headers={'User-Agent': UA})
-    ctx = ssl.create_default_context()
-    with urllib.request.urlopen(req, timeout=180, context=ctx) as resp:
-        html = resp.read().decode('utf-8', 'replace')
+    last_err = None
+    for i in range(attempts):
+        t0 = time.time()
+        try:
+            req = urllib.request.Request(url, headers={'User-Agent': UA})
+            ctx = ssl.create_default_context()
+            with urllib.request.urlopen(req, timeout=180, context=ctx) as resp:
+                html = resp.read().decode('utf-8', 'replace')
 
-    raw = re.findall(r'href="([^"]+\.png)"', html)
-    names = []
-    for n in raw:
-        n = urllib.parse.unquote(n)
-        if n.endswith('.png'):
-            n = n[:-4]
-        n = n.strip()
-        if n:
-            names.append(n)
-    names = sorted(set(names))
-    print(f'  {sysname}: {len(names)} names in {time.time() - t0:.0f}s')
-    return names
+            raw = re.findall(r'href="([^"]+\.png)"', html)
+            names = []
+            for n in raw:
+                n = urllib.parse.unquote(n)
+                if n.endswith('.png'):
+                    n = n[:-4]
+                n = n.strip()
+                if n:
+                    names.append(n)
+            names = sorted(set(names))
+            print(f'  {sysname}: {len(names)} names in {time.time() - t0:.0f}s')
+            return names
+        except Exception as e:                      # noqa: BLE001
+            last_err = e
+            wait = 2 * (i + 1)
+            print(f'  {sysname}: 第 {i + 1} 次失败（{type(e).__name__}），{wait}s 后重试')
+            time.sleep(wait)
+    raise last_err
 
 
 def main():

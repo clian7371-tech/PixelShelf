@@ -145,11 +145,31 @@ jobs:
           files: PixelShelf.apk
           generate_release_notes: true
           body: |
-            PixelShelf ${{ github.ref_name }}
+            ## PixelShelf ${{ github.ref_name }}
 
-            **安装前请阅读**
-            - 本应用不含任何游戏 ROM、模拟器或 BIOS，请自行安装模拟器并自备合法 ROM。
-            - 首次启动需要授予「所有文件访问」权限，用于扫描 ROM 目录。
-            - 与任天堂、索尼等权利人无关联；平台名称仅用于说明兼容性。
+            把 **GBA / GBC / NDS / PSP / SNES / NES / MD / PS1** 八个平台的模拟器游戏集中到一个界面，
+            点开就玩，可设为开机桌面。APK 仅约 650 KB，无 AndroidX、无第三方依赖、无广告、无统计。
 
-            详见 [NOTICE.md](https://github.com/${{ github.repository }}/blob/main/NOTICE.md)
+            ### 安装
+
+            1. 下载下方 `PixelShelf.apk` 并安装（需允许「安装未知来源应用」）
+            2. 首次启动授予 **「所有文件访问」** 权限 —— 用于扫描 ROM 目录
+            3. 可选：在设置里设为默认桌面，或开启「开机自启动」
+
+            ### 亮点
+
+            - **一个界面管所有平台**，自动识别平台并调用对应模拟器
+            - **中文汉化版 / 魔改版也能匹配封面**：读取 ROM 内部标题（PSP 解析 `PARAM.SFO`）+ 内置中文别名表
+            - **魔改版自动标注**：卡片显示「改版」角标，长按可查看封面来源
+            - **手柄友好**：方向键移动焦点、A 键启动、B 键搜索、L1/R1 切换平台
+            - **横竖屏自适应**：横屏自动压缩顶部栏并增加列数
+            - **对图源友好**：封面请求串行 + 限速，可关闭、可换自建镜像
+
+            ### 合规声明
+
+            - 本应用**不包含**任何游戏 ROM、模拟器程序、BIOS 或封面图片
+            - 请自行安装模拟器并**合法获得** ROM
+            - 封面按需从公开图库下载并缓存到本机，可在设置中关闭
+            - 与任天堂、索尼等权利人**无任何关联**，平台名称仅用于说明兼容性
+
+            详见 [NOTICE.md](https://github.com/${{ github.repository }}/blob/main/NOTICE.md)。

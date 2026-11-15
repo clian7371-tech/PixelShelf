@@ -22,6 +22,13 @@ public final class Scanner {
 
     private static final int MAX_DEPTH = 6;
     private static final int MAX_FILES = 20000;
+    /** 小于此体积的压缩包不当作 ROM */
+    private static final long MIN_ARCHIVE_BYTES = 64 * 1024;
+
+    /** 文件名含这些词的是模拟器系统资源，不是游戏 */
+    private static final String[] NOT_GAME_TOKENS = {
+            "bios", "firmware", "cheat", "gameshark", "codebreaker", "actionreplay",
+    };
 
     public interface Callback {
         void onProgress(int found);
@@ -134,31 +141,35 @@ public final class Scanner {
 
             budget[0]--;
             String lower = name.toLowerCase(Locale.US);
+            if (isNotAGame(lower)) continue;
             String platform = Emulators.platformOf(lower);
             if (platform == null) continue;
-            // 只认 GBA/NDS/PSP 三个平台的专属后缀，避免 .zip 通吃
-            if (!isOwnExtension(platform, lower)) continue;
+            // 压缩包太小基本不可能是 ROM（排除 drastic_bios.zip 这类系统资源）
+            if (isArchive(lower) && f.length() < MIN_ARCHIVE_BYTES) continue;
 
-            String key = f.getAbsolutePath();
+            // 用规范路径去重：/storage/emulated/0 与 /storage/self/primary 指向同一文件
+            String key;
+            try {
+                key = f.getCanonicalPath();
+            } catch (Throwable t) {
+                key = f.getAbsolutePath();
+            }
             if (!seen.add(key)) continue;
             out.add(new Game(key, Game.readName(key), platform, f.length(), f.lastModified()));
             if (cb != null && out.size() % 20 == 0) cb.onProgress(out.size());
         }
     }
 
-    /** .zip/.7z 只有放在对应平台文件夹里才算数 */
-    private static boolean isOwnExtension(String platform, String lower) {
-        if (!lower.endsWith(".zip") && !lower.endsWith(".7z")) return true;
-        switch (platform) {
-            case Emulators.PLATFORM_GBA:
-                return lower.contains("gba");
-            case Emulators.PLATFORM_NDS:
-                return lower.contains("nds") || lower.contains("ds");
-            case Emulators.PLATFORM_PSP:
-                return lower.contains("psp");
-            default:
-                return false;
+    /** 模拟器的系统文件不是游戏 */
+    private static boolean isNotAGame(String lowerName) {
+        for (String bad : NOT_GAME_TOKENS) {
+            if (lowerName.contains(bad)) return true;
         }
+        return false;
+    }
+
+    private static boolean isArchive(String lowerName) {
+        return lowerName.endsWith(".zip") || lowerName.endsWith(".7z") || lowerName.endsWith(".rar");
     }
 
     private Scanner() {

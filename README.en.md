@@ -1,6 +1,6 @@
 # PixelShelf
 
-A lightweight Android game-library frontend that unifies **GBA / NDS / PSP** emulators into one launcher — so you open one app and pick any game, instead of juggling three emulator icons.
+A lightweight Android game-library frontend that unifies **8 platforms** (GBA, GBC/GB, NDS, PSP, SNES, NES, Genesis/MD, PS1) into one launcher — so you open one app and pick any game, instead of juggling a dozen emulator icons.
 
 Built for Chinese ROM collections: works with fan-translated and ROM-hack releases that English-first scrapers can't match.
 
@@ -22,7 +22,8 @@ Built for Chinese ROM collections: works with fan-translated and ROM-hack releas
 ## Features
 
 - **Unified library** — scans `ROM/`, `Download/`, `MyBoy/`, `DraStic/`, `PSP/` and other common folders
-- **One-tap launch** — hands the ROM to the right emulator automatically (My Boy!, DraStic, PPSSPP, RetroArch, mGBA, melonDS…)
+- **8 platforms** — GBA, GBC/GB, NDS, PSP, SNES, NES, Genesis/MD, PS1
+- **One-tap launch** — hands the ROM to the right emulator automatically (My Boy!, DraStic, PPSSPP, RetroArch, mGBA, melonDS, ePSXe…)
 - **Automatic covers** — matched offline from a bundled index, downloaded once and cached forever
 - **Hack-aware** — knows that `西班牙火箭队` is a Pokémon Emerald hack and shows the base-game cover with a `改版` badge
 - **Gamepad-friendly** — D-pad to move focus, A to launch, B for search, L1/R1 to switch platform
@@ -43,11 +44,19 @@ Requires Android 5.0+ (API 21).
 
 | Platform | Extensions | Known emulators |
 |---|---|---|
-| GBA | `.gba` `.gbc` `.gb` | My Boy!, GBA.emu, Pizza Boy, mGBA, RetroArch |
+| GBA | `.gba` | My Boy!, GBA.emu, Pizza Boy, mGBA, RetroArch |
+| GBC / GB | `.gbc` `.gb` | My OldBoy!, GBC.emu, My Boy!, Pizza Boy, RetroArch |
 | NDS | `.nds` `.ds` | DraStic, melonDS, NDS.emu, RetroArch |
 | PSP | `.iso` `.cso` `.pbp` `.chd` | PPSSPP, PPSSPP Gold, RetroArch |
+| SNES | `.sfc` `.smc` `.swc` | Snes9x EX+, SuperRetro16, Nostalgia.SNES, RetroArch |
+| NES | `.nes` `.fds` `.unf` `.unif` | NES.emu, Nostalgia.NES, RetroArch |
+| Genesis / MD | `.md` `.gen` `.smd` | MD.emu, RetroArch |
+| PS1 | `.cue` `.ccd` `.m3u` | ePSXe, DuckStation, FPse, RetroArch |
 
-Zipped ROMs (`.zip`/`.7z`) are supported when the filename contains the platform keyword.
+PS1 intentionally avoids `.iso`, `.pbp` and `.chd` because those extensions collide with PSP; disc images with `.cue` are detected reliably.
+
+Zipped ROMs (`.zip`/`.7z`/`.rar`) are resolved by keywords in the filename, e.g. `Pokemon GBA.zip`.
+Emulator system files (`*bios*`, `*firmware*`, `*cheat*`) and suspiciously small archives are ignored.
 
 ## Build from source
 

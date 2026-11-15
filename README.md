@@ -1,6 +1,6 @@
 # PixelShelf
 
-把 GBA / NDS / PSP 三个模拟器里的游戏集中到一个界面，点开就玩，并可设为开机桌面。
+把 GBA / GBC / NDS / PSP / SNES / NES / MD / PS1 八个平台的模拟器游戏集中到一个界面，点开就玩，并可设为开机桌面。
 界面参考开源掌机前端（EmulationStation / ES-DE）风格：赛博网格背景、官方封面、聚焦缩放与辉光动效。
 
 > English: [README.en.md](README.en.md) ｜ 许可：[MIT](LICENSE) ｜ 声明：[NOTICE.md](NOTICE.md)
@@ -97,23 +97,26 @@
 PPSSPP 对 `file://` URI 会报「文件不存在」，应用已针对它改用自身的参数通道，实测可以进入游戏。
 
 
-## 支持的模拟器
+## 支持的平台与模拟器
 
-| 平台 | 自动识别的包名 |
-|---|---|
-| GBA | My Boy!、My Boy! Free、GBA.emu、Pizza Boy、mGBA、RetroArch |
-| NDS | DraStic、melonDS、NDS.emu、RetroArch |
-| PSP | PPSSPP、PPSSPP Gold、RetroArch |
+| 平台 | 后缀 | 自动识别的模拟器 |
+|---|---|---|
+| GBA | `.gba` | My Boy!、GBA.emu、Pizza Boy、mGBA、RetroArch |
+| GBC / GB | `.gbc` `.gb` | My OldBoy!、GBC.emu、My Boy!、Pizza Boy、RetroArch |
+| NDS | `.nds` `.ds` | DraStic、melonDS、NDS.emu、RetroArch |
+| PSP | `.iso` `.cso` `.pbp` `.chd` `.elf` | PPSSPP、PPSSPP Gold、RetroArch |
+| SNES | `.sfc` `.smc` `.swc` | Snes9x EX+、SuperRetro16、Nostalgia.SNES、RetroArch |
+| NES | `.nes` `.fds` `.unf` `.unif` | NES.emu、Nostalgia.NES、RetroArch |
+| MD（世嘉） | `.md` `.gen` `.smd` | MD.emu、RetroArch |
+| PS1 | `.cue` `.ccd` `.m3u` | ePSXe、DuckStation、FPse、RetroArch |
 
-列表里没有你的模拟器也能用：只要它能响应打开对应 ROM 文件，就会被自动选中。
+列表里没有你的模拟器也能用：只要它能响应打开对应 ROM 文件，就会被自动选中。设置页也可以手动指定。
 
-## 支持的 ROM 格式
+**为什么 PS1 只认 `.cue`/`.ccd`/`.m3u`**：`.iso`、`.pbp`、`.chd` 与 PSP 的后缀完全重叠，按后缀无法区分。带 `.cue` 的 PS1 镜像可以直接识别；单文件 `.chd`/`.pbp` 目前会归到 PSP。
 
-- GBA：`.gba` `.gbc` `.gb`（压缩包需文件名含 gba）
-- NDS：`.nds` `.ds`（压缩包需含 nds/ds）
-- PSP：`.iso` `.cso` `.pbp` `.chd` `.elf`
+**其他后缀**：`.zip` `.7z` `.rar` 按文件名关键词识别平台（如 `Pokemon GBA.zip`）。
 
-游戏名会自动去掉 `(USA)`、`(Rev 1)`、`[!]` 这类标签。
+游戏名会自动去掉 `(USA)`、`(Rev 1)`、`[!]` 这类标签。模拟器的系统文件（`*bios*`、`*firmware*`、`*cheat*`）和体积异常小的压缩包会被自动排除。
 
 ## 说明
 

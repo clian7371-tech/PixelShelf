@@ -41,8 +41,13 @@ public final class CoverFetcher {
 
     static {
         SYSTEM_DIR.put(Emulators.PLATFORM_GBA, "Nintendo - Game Boy Advance");
+        SYSTEM_DIR.put(Emulators.PLATFORM_GBC, "Nintendo - Game Boy Color");
         SYSTEM_DIR.put(Emulators.PLATFORM_NDS, "Nintendo - Nintendo DS");
         SYSTEM_DIR.put(Emulators.PLATFORM_PSP, "Sony - PlayStation Portable");
+        SYSTEM_DIR.put(Emulators.PLATFORM_SNES, "Nintendo - Super Nintendo Entertainment System");
+        SYSTEM_DIR.put(Emulators.PLATFORM_NES, "Nintendo - Nintendo Entertainment System");
+        SYSTEM_DIR.put(Emulators.PLATFORM_MD, "Sega - Mega Drive - Genesis");
+        SYSTEM_DIR.put(Emulators.PLATFORM_PS1, "Sony - PlayStation");
     }
 
     /** 当前生效的图源地址 */

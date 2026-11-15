@@ -55,6 +55,7 @@ public class MainActivity extends Activity {
     private View searchWrap;
 
     private final List<GameCard> cards = new ArrayList<>();
+    private final List<String> tabKeys = new ArrayList<>();
     private int cols = 3;
     /** 卡片高宽比：竖屏偏竖直，横屏偏扁，保证横屏能看到两行 */
     private float cardRatio = 1.24f;
@@ -176,19 +177,50 @@ public class MainActivity extends Activity {
         render(false);
     }
 
+    private String tabsSignature = "";
+
+    /** 只有在库里的平台才显示标签，顺序固定 */
+    private void ensureTabs() {
+        StringBuilder sb = new StringBuilder();
+        for (String p : Emulators.ORDER) {
+            for (Game g : all) {
+                if (g.platform.equals(p)) {
+                    sb.append(p).append(',');
+                    break;
+                }
+            }
+        }
+        String sig = sb.toString();
+        if (!sig.equals(tabsSignature)) {
+            tabsSignature = sig;
+            buildTabs();
+        }
+    }
+
     private void buildTabs() {
         tabsBar.removeAllViews();
-        String[][] defs = {
-                {"all", "全部", "0xFF22D3EE"},
-                {Emulators.PLATFORM_GBA, "GBA", "0xFFA78BFA"},
-                {Emulators.PLATFORM_NDS, "NDS", "0xFF34D399"},
-                {Emulators.PLATFORM_PSP, "PSP", "0xFFFB923C"},
-        };
-        tabs = new PlatformTab[defs.length];
-        for (int i = 0; i < defs.length; i++) {
-            final String key = defs[i][0];
+        tabKeys.clear();
+        tabKeys.add("all");
+        for (String p : Emulators.ORDER) {
+            for (Game g : all) {
+                if (g.platform.equals(p)) {
+                    tabKeys.add(p);
+                    break;
+                }
+            }
+        }
+        // 选中的平台不在库里了就回到「全部」
+        if (!"all".equals(filter) && !tabKeys.contains(filter)) {
+            filter = "all";
+        }
+
+        tabs = new PlatformTab[tabKeys.size()];
+        for (int i = 0; i < tabKeys.size(); i++) {
+            final String key = tabKeys.get(i);
             PlatformTab t = new PlatformTab(this);
-            t.configure(defs[i][1], (int) Long.parseLong(defs[i][2].substring(2), 16));
+            String label = "all".equals(key) ? "全部" : Emulators.labelOf(key);
+            int accent = "all".equals(key) ? 0xFF22D3EE : CoverArt.accentFor(key);
+            t.configure(label, accent);
             t.setSelectedSmooth(key.equals(filter), false);
             t.setClickable(true);
             t.setFocusable(true);
@@ -209,9 +241,8 @@ public class MainActivity extends Activity {
     private void selectTab(String key) {
         if (key.equals(filter)) return;
         filter = key;
-        String[] keys = {"all", Emulators.PLATFORM_GBA, Emulators.PLATFORM_NDS, Emulators.PLATFORM_PSP};
-        for (int i = 0; i < keys.length; i++) {
-            tabs[i].setSelectedSmooth(keys[i].equals(filter), true);
+        for (int i = 0; i < tabKeys.size() && i < tabs.length; i++) {
+            tabs[i].setSelectedSmooth(tabKeys.get(i).equals(filter), true);
         }
         render(true);
     }
@@ -282,7 +313,17 @@ public class MainActivity extends Activity {
         }, "scan").start();
     }
 
+    /** 平台在「全部」里的排序位置，未收录的排最后 */
+    private static int platformRank(String platform) {
+        for (int i = 0; i < Emulators.ORDER.length; i++) {
+            if (Emulators.ORDER[i].equals(platform)) return i;
+        }
+        return Emulators.ORDER.length;
+    }
+
     private void render(boolean animate) {
+        ensureTabs();
+
         List<Game> shown = new ArrayList<>();
         for (Game g : all) {
             if (!"all".equals(filter) && !g.platform.equals(filter)) continue;
@@ -290,8 +331,10 @@ public class MainActivity extends Activity {
             shown.add(g);
         }
         Collections.sort(shown, (a, b) -> {
-            int p = a.platform.compareTo(b.platform);
-            return p != 0 ? p : a.name.compareToIgnoreCase(b.name);
+            int pa = platformRank(a.platform);
+            int pb = platformRank(b.platform);
+            if (pa != pb) return pa - pb;
+            return a.name.compareToIgnoreCase(b.name);
         });
 
         countView.setText(shown.size() + " 个游戏");
@@ -662,13 +705,13 @@ public class MainActivity extends Activity {
     }
 
     private void cycleTab(int dir) {
-        String[] keys = {"all", Emulators.PLATFORM_GBA, Emulators.PLATFORM_NDS, Emulators.PLATFORM_PSP};
+        if (tabKeys.isEmpty()) return;
         int cur = 0;
-        for (int i = 0; i < keys.length; i++) {
-            if (keys[i].equals(filter)) cur = i;
+        for (int i = 0; i < tabKeys.size(); i++) {
+            if (tabKeys.get(i).equals(filter)) cur = i;
         }
-        int next = (cur + dir + keys.length) % keys.length;
-        selectTab(keys[next]);
+        int next = (cur + dir + tabKeys.size()) % tabKeys.size();
+        selectTab(tabKeys.get(next));
         if (tabsBar.getChildCount() > next) tabsBar.getChildAt(next).requestFocus();
     }
 
