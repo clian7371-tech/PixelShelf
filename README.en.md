@@ -30,7 +30,7 @@ Built for Chinese ROM collections: works with fan-translated and ROM-hack releas
 - **Cyberpunk UI** — animated perspective grid, procedural covers as fallback, focus glow/scale animations, all custom-drawn
 - **Landscape aware** — 3–4 columns in portrait, up to 8 in landscape with a compact header; reflows live on rotation
 - **Boot start** — optional autostart so it behaves like a handheld console's home screen
-- **Huawei/Honor aware** — detects the OEM restriction on third-party launchers and offers a workaround instead of silently failing
+- **Home-app mode** — can replace your launcher to feel like a handheld. Whether that works depends on the system layer allowing third-party HOME apps (some vendor ROMs and HarmonyOS restrict it); the app detects the outcome instead of guessing by brand
 
 ## Install
 
@@ -129,8 +129,8 @@ Issues and PRs are welcome. Two things worth knowing before you start:
 
 ## FAQ
 
-**Why can't PixelShelf become my default home app on Huawei/Honor?**
-EMUI/MagicOS blocks third-party launchers for non-system apps. The app detects this and offers "boot autostart + desktop shortcut" as a workaround.
+**Why can't PixelShelf become my default home app?**
+Some systems do not allow third-party HOME apps — commonly vendor-customised Android and HarmonyOS. PixelShelf does not hardcode any brand check: it opens the system picker, then verifies on return whether it actually became the default, and only then shows the "boot autostart + desktop shortcut" workaround.
 
 **A game launches to a black screen on PPSSPP.**
 PPSSPP does not accept `file://` URIs. PixelShelf special-cases it by passing `org.ppsspp.ppsspp.Args` with an absolute path.

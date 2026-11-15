@@ -104,6 +104,24 @@ public final class Prefs {
         sp.edit().putString("cover_base", url == null ? "" : url.trim()).apply();
     }
 
+    /** 用户是否尝试过把本应用设为默认桌面 */
+    public boolean homeAttempted() {
+        return sp.getBoolean("home_attempted", false);
+    }
+
+    public void setHomeAttempted(boolean v) {
+        sp.edit().putBoolean("home_attempted", v).apply();
+    }
+
+    /** 尝试过但没成功 → 说明本机系统不允许第三方桌面 */
+    public boolean homeBlocked() {
+        return sp.getBoolean("home_blocked", false);
+    }
+
+    public void setHomeBlocked(boolean v) {
+        sp.edit().putBoolean("home_blocked", v).apply();
+    }
+
     private static String join(Set<String> items) {
         StringBuilder sb = new StringBuilder();
         for (String s : items) {

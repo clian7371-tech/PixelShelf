@@ -29,6 +29,8 @@ public class SettingsActivity extends Activity {
     private Prefs prefs;
     private LinearLayout foldersBox;
     private LinearLayout emuBox;
+    private CheckBox homeCheck;
+    private LinearLayout warnCard;
 
     private static final int REQ_TREE = 1003;
 
@@ -45,6 +47,31 @@ public class SettingsActivity extends Activity {
         setContentView(build());
         refreshFolders();
         refreshEmulators();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (prefs == null) return;
+        // 从系统设置回来：如果尝试过设为桌面但仍不是默认桌面，说明系统不允许
+        if (prefs.homeAttempted() && !HomeHelper.isDefaultHome(this)) {
+            prefs.setHomeBlocked(true);
+        }
+        updateHomeUi();
+    }
+
+    /** 刷新桌面相关 UI：勾选状态 + 受限提示的可见性 */
+    private void updateHomeUi() {
+        boolean isHome = HomeHelper.isDefaultHome(this);
+        if (homeCheck != null) {
+            homeCheck.setText(isHome ? "已设为默认桌面" : "设为默认桌面");
+            homeCheck.setChecked(isHome);
+            homeCheck.setEnabled(!isHome);
+        }
+        if (warnCard != null) {
+            boolean warn = !isHome && (prefs.homeBlocked() || !HomeHelper.canBecomeHome(this));
+            warnCard.setVisibility(warn ? View.VISIBLE : View.GONE);
+        }
     }
 
     private View build() {
@@ -90,48 +117,55 @@ public class SettingsActivity extends Activity {
         // ---- 桌面与启动 ----
         root.addView(section("桌面与启动"));
 
-        boolean canHome = HomeHelper.canBecomeHome(this);
         boolean isHome = HomeHelper.isDefaultHome(this);
 
         View homeCard = card();
         LinearLayout homeRow = (LinearLayout) homeCard;
-        CheckBox home = check(isHome ? "已设为默认桌面" : "设为默认桌面", isHome);
-        home.setEnabled(canHome);
-        if (!canHome) {
-            home.setTextColor(0xFF55637A);
-            home.setButtonTintList(new ColorStateList(
-                    new int[][]{{android.R.attr.state_checked}, {}},
-                    new int[]{0xFF2F3B4D, 0xFF2F3B4D}));
-        }
-        home.setOnClickListener(v -> HomeHelper.openHomeSettings(this));
-        homeRow.addView(home);
+        homeCheck = check(isHome ? "已设为默认桌面" : "设为默认桌面", isHome);
+        // 能否设为桌面取决于系统底层是否开放第三方 HOME，静态无法可靠判断，
+        // 所以这里总是允许点击，点完回来再验证结果
+        homeCheck.setEnabled(!isHome);
+        homeCheck.setOnClickListener(v -> {
+            prefs.setHomeAttempted(true);
+            HomeHelper.openHomeSettings(this);
+        });
+        homeRow.addView(homeCheck);
+        homeRow.addView(small("能否设为默认桌面取决于系统底层是否允许第三方应用注册为桌面（部分定制系统、"
+                + "鸿蒙等会限制）。点一下会跳到系统设置，设置完回到这里会自动检测结果。"));
         root.addView(homeCard);
 
-        if (!canHome) {
-            LinearLayout warn = (LinearLayout) card();
-            warn.setBackground(roundRect(0x1AFB923C, 0x55FB923C, 12));
-            TextView t = new TextView(this);
-            t.setText("本机系统限制了第三方桌面（华为/荣耀常见）。\n"
-                    + "替代方案：打开下面的「开机自启动」，再在系统桌面放一个 PixelShelf 快捷方式，"
-                    + "每次同样一步进入。");
-            t.setTextColor(0xFFE0A24A);
-            t.setTextSize(11.5f);
-            t.setLineSpacing(0f, 1.35f);
-            warn.addView(t);
+        warnCard = (LinearLayout) card();
+        warnCard.setBackground(roundRect(0x1AFB923C, 0x55FB923C, 12));
+        TextView t = new TextView(this);
+        t.setText("点开系统设置后如果找不到 PixelShelf 或无法选中，说明本机系统不允许第三方应用"
+                + "作为桌面（多见于厂商定制 Android 与鸿蒙系统）。\n\n"
+                + "替代方案：打开下面的「开机自启动」，再在系统桌面放一个 PixelShelf 快捷方式，"
+                + "效果接近，每次同样一步进入。");
+        t.setTextColor(0xFFE0A24A);
+        t.setTextSize(11.5f);
+        t.setLineSpacing(0f, 1.35f);
+        warnCard.addView(t);
 
-            TextView auto = link("打开系统「应用启动管理」");
-            auto.setOnClickListener(v -> {
-                if (!HomeHelper.openAutostartSettings(this)) {
-                    Toast.makeText(this, "请到 设置 → 电池 → 应用启动管理 中允许本应用自启动",
-                            Toast.LENGTH_LONG).show();
-                }
-            });
-            warn.addView(auto);
-            LinearLayout.LayoutParams wlp = new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            wlp.topMargin = dp(8);
-            root.addView(warn, wlp);
-        }
+        TextView auto = link("打开「自启动 / 后台管理」");
+        auto.setOnClickListener(v -> {
+            if (!HomeHelper.openAutostartSettings(this)) {
+                Toast.makeText(this, "请在系统设置里找到本应用，允许自启动 / 后台运行",
+                        Toast.LENGTH_LONG).show();
+            }
+        });
+        warnCard.addView(auto);
+        TextView retry = link("重新尝试设为桌面");
+        retry.setOnClickListener(v -> {
+            prefs.setHomeAttempted(true);
+            HomeHelper.openHomeSettings(this);
+        });
+        warnCard.addView(retry);
+
+        LinearLayout.LayoutParams wlp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        wlp.topMargin = dp(8);
+        root.addView(warnCard, wlp);
+        updateHomeUi();
 
         View bootCard = card();
         LinearLayout bootRow = (LinearLayout) bootCard;
