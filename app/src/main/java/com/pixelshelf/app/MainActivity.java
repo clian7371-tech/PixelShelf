@@ -25,6 +25,7 @@ import android.view.animation.DecelerateInterpolator;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.GridLayout;
+import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
@@ -55,6 +56,13 @@ public class MainActivity extends Activity {
 
     private final List<GameCard> cards = new ArrayList<>();
     private int cols = 3;
+    /** 卡片高宽比：竖屏偏竖直，横屏偏扁，保证横屏能看到两行 */
+    private float cardRatio = 1.24f;
+    private boolean landscape = false;
+
+    private LinearLayout topBar;
+    private HorizontalScrollView tabsScroll;
+    private ScrollView gridScroll;
 
     private static final java.util.concurrent.ExecutorService COVER_POOL =
             java.util.concurrent.Executors.newSingleThreadExecutor();
@@ -92,6 +100,9 @@ public class MainActivity extends Activity {
         progress = findViewById(R.id.progress);
         emptyBox = findViewById(R.id.empty);
         searchWrap = findViewById(R.id.search_wrap);
+        topBar = findViewById(R.id.top_bar);
+        tabsScroll = findViewById(R.id.tabs_scroll);
+        gridScroll = findViewById(R.id.grid_scroll);
 
         findViewById(R.id.btn_settings).setOnClickListener(v ->
                 startActivity(new Intent(this, SettingsActivity.class)));
@@ -111,7 +122,58 @@ public class MainActivity extends Activity {
         });
 
         cols = getResources().getConfiguration().screenWidthDp >= 600 ? 4 : 3;
+        applyResponsiveLayout();
+    }
+
+    /**
+     * 按当前屏幕方向调整列数与间距。
+     * 竖屏：卡片偏竖直，3~4 列；横屏：压缩顶部栏、卡片变扁、增加列数，保证能看到两行。
+     */
+    private void applyResponsiveLayout() {
+        android.content.res.Configuration cfg = getResources().getConfiguration();
+        landscape = cfg.screenWidthDp > cfg.screenHeightDp;
+        int wDp = Math.max(320, cfg.screenWidthDp);
+
+        if (landscape) {
+            // 横屏每列约 130dp
+            cols = Math.max(4, Math.min(8, Math.round(wDp / 130f)));
+            cardRatio = 1.16f;
+
+            headline.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 18f);
+            countView.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 9.5f);
+            topBar.setPadding(dp(14), dp(1), dp(10), 0);
+            tabsScroll.setPadding(dp(14), dp(2), dp(14), 0);
+            gridScroll.setPadding(dp(8), dp(4), dp(8), dp(10));
+            setSearchHeight(dp(32));
+        } else {
+            cols = wDp >= 600 ? 4 : 3;
+            cardRatio = 1.24f;
+
+            headline.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 26f);
+            countView.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 11f);
+            topBar.setPadding(dp(18), dp(8), dp(12), dp(2));
+            tabsScroll.setPadding(dp(16), dp(10), dp(16), 0);
+            gridScroll.setPadding(dp(10), dp(8), dp(10), dp(26));
+            setSearchHeight(dp(36));
+        }
+        // 减少列数时必须先移除子 View，否则旧的行列索引会越界并抛 IllegalArgumentException
+        grid.removeAllViews();
+        cards.clear();
         grid.setColumnCount(cols);
+    }
+
+    private void setSearchHeight(int px) {
+        ViewGroup.LayoutParams lp = searchBox.getLayoutParams();
+        lp.height = px;
+        searchBox.setLayoutParams(lp);
+    }
+
+    @Override
+    public void onConfigurationChanged(android.content.res.Configuration cfg) {
+        super.onConfigurationChanged(cfg);
+        // 清单里声明了 configChanges，旋转时不会重建 Activity，这里手动重新布局
+        applyResponsiveLayout();
+        render(false);
     }
 
     private void buildTabs() {
@@ -247,7 +309,7 @@ public class MainActivity extends Activity {
         int screenW = getResources().getDisplayMetrics().widthPixels;
         int gap = dp(10);
         int cardW = (screenW - dp(20) - gap * cols) / cols;
-        int cardH = Math.round(cardW * 1.24f);
+        int cardH = Math.round(cardW * cardRatio);
 
         for (int i = 0; i < shown.size(); i++) {
             final Game g = shown.get(i);

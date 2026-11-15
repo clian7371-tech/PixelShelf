@@ -27,6 +27,7 @@ Built for Chinese ROM collections: works with fan-translated and ROM-hack releas
 - **Hack-aware** — knows that `西班牙火箭队` is a Pokémon Emerald hack and shows the base-game cover with a `改版` badge
 - **Gamepad-friendly** — D-pad to move focus, A to launch, B for search, L1/R1 to switch platform
 - **Cyberpunk UI** — animated perspective grid, procedural covers as fallback, focus glow/scale animations, all custom-drawn
+- **Landscape aware** — 3–4 columns in portrait, up to 8 in landscape with a compact header; reflows live on rotation
 - **Boot start** — optional autostart so it behaves like a handheld console's home screen
 - **Huawei/Honor aware** — detects the OEM restriction on third-party launchers and offers a workaround instead of silently failing
 
