@@ -217,9 +217,8 @@ public class SettingsActivity extends Activity {
 
         about.addView(small(
                 "本应用是一个游戏库前端（启动器），不包含任何游戏 ROM、模拟器程序或 BIOS 文件。\n"
-                        + "需要用户自行安装 GBA/NDS/PSP 模拟器并自备合法获得 ROM。\n\n"
-                        + "与任天堂、索尼、Game Boy、Nintendo DS、PlayStation Portable 等"
-                        + "权利人均无关联，相关名称仅用于说明兼容性。\n\n"
+                        + "需要用户自行安装各平台的模拟器，并自备合法获得的 ROM。\n\n"
+                        + "与任天堂、索尼、世嘉等权利人均无关联，相关名称仅用于说明兼容性。\n\n"
                         + "封面图片来自第三方公开图库（libretro thumbnails），版权归各自权利人所有，"
                         + "本应用仅按需下载并显示，不打包分发。如权利人要求，可关闭自动获取。\n\n"
                         + "本应用不含广告、统计埋点、账号系统，不收集、不上传任何个人数据。"));
